@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fantasy Football Projections</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .card {
+            background-color: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #4a5568;
+        }
+        th {
+            background-color: #4a5568;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #4a5568;
+        }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #4a5568;
+            background-color: #2d3748;
+            color: #e2e8f0;
+            outline: none;
+        }
+        .search-input:focus {
+            border-color: #63b3ed;
+        }
+        .select-filter {
+            background-color: #2d3748;
+            border: 1px solid #4a5568;
+            color: #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1 class="text-3xl font-bold mb-4 text-center">Fantasy Football Projections</h1>
+            <h2 class="text-xl mb-6 text-center text-gray-400">Week {{ week }}, Year {{ year }}</h2>
+
+            <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search for a player...">
+                
+                <!-- Position Filter -->
+                <div class="w-full sm:w-auto">
+                    <select id="positionFilter" class="select-filter w-full">
+                        <option value="">All Positions</option>
+                        <option value="QB" {% if selected_position == "QB" %}selected{% endif %}>QB</option>
+                        <option value="RB" {% if selected_position == "RB" %}selected{% endif %}>RB</option>
+                        <option value="WR" {% if selected_position == "WR" %}selected{% endif %}>WR</option>
+                        <option value="TE" {% if selected_position == "TE" %}selected{% endif %}>TE</option>
+                        <option value="K" {% if selected_position == "K" %}selected{% endif %}>K</option>
+                        <option value="DEF" {% if selected_position == "DEF" %}selected{% endif %}>DEF</option>
+                    </select>
+                </div>
+
+                <!-- Scoring Filter -->
+                <div class="w-full sm:w-auto">
+                    <select id="scoringFilter" class="select-filter w-full">
+                        <option value="ppr" {% if selected_scoring == "ppr" %}selected{% endif %}>PPR</option>
+                        <option value="half_ppr" {% if selected_scoring == "half_ppr" %}selected{% endif %}>Half PPR</option>
+                        <option value="standard" {% if selected_scoring == "standard" %}selected{% endif %}>Standard</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="playerTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Position</th>
+                            <th>Average Points</th>
+                            <th>Week Points</th>
+                            <th>Sleeper Projection</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in players %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ player.name }}</td>
+                            <td>{{ player.team }}</td>
+                            <td>{{ player.position }}</td>
+                            <td>{{ "%.2f"|format(player.average) }}</td>
+                            <td>{{ "%.2f"|format(player.week_points) }}</td>
+                            <td>{{ "%.2f"|format(player.sleeper_projection) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="noResults" class="hidden text-center text-xl mt-4">No results found.</div>
+        </div>
+    </div>
+
+    <script id="players-data" type="application/json">{{ all_players | tojson | safe }}</script>
+
+    <script>
+        const allPlayers = JSON.parse(document.getElementById("players-data").textContent);
+        const searchInput = document.getElementById('searchInput');
+        const positionFilter = document.getElementById('positionFilter');
+        const scoringFilter = document.getElementById('scoringFilter');
+        const tableBody = document.querySelector("#playerTable tbody");
+        const noResultsMessage = document.getElementById('noResults');
+
+        function renderTable(playersList) {
+            tableBody.innerHTML = '';
+            if (playersList.length === 0) {
+                noResultsMessage.classList.remove('hidden');
+            } else {
+                noResultsMessage.classList.add('hidden');
+                playersList.forEach((player, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${player.name}</td>
+                        <td>${player.team}</td>
+                        <td>${player.position}</td>
+                        <td>${player.average.toFixed(2)}</td>
+                        <td>${player.week_points.toFixed(2)}</td>
+                        <td>${player.sleeper_projection.toFixed(2)}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Search filter (works client-side)
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredPlayers = allPlayers.filter(player => {
+                return player.name.toLowerCase().includes(searchTerm) ||
+                       player.team.toLowerCase().includes(searchTerm);
+            });
+            renderTable(filteredPlayers);
+        });
+
+        // Position + Scoring filters reload the backend
+        function reloadWithFilters() {
+            const params = new URLSearchParams(window.location.search);
+            params.set("position", positionFilter.value);
+            params.set("scoring", scoringFilter.value);
+            window.location.search = params.toString();
+        }
+
+        positionFilter.addEventListener('change', reloadWithFilters);
+        scoringFilter.addEventListener('change', reloadWithFilters);
+    </script>
+</body>
+</html>
