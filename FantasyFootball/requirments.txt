@@ -1,9 +1,0 @@
-fastapi
-uvicorn
-pymongo
-requests
-jinja2
-python-dotenv
-schedule
-google-generativeai
-dotenv

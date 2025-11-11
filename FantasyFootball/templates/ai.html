@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #1a202c; color: #e2e8f0; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-3xl mx-auto bg-gray-800 p-8 rounded-2xl shadow-lg">
+        <h1 class="text-3xl font-bold mb-2">Fantasy Football AI Assistant 🤖</h1>
+        <p class="mb-6 text-gray-400">Ask questions about player stats for a specific week.</p>
+
+        <form method="get" action="/ask-agent" class="space-y-4">
+
+            <div class="flex items-center bg-gray-700 rounded-lg p-2 space-x-2">
+                <input type="text" name="q" value="{{ question }}" placeholder="Who were the top 5 RBs in week 4?" class="w-full bg-transparent p-3 text-white focus:outline-none" required>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg whitespace-nowrap">Ask Agent</button>
+            </div>
+        </form>
+        
+        <div class="mt-4 text-sm text-gray-500">
+            <a href="/" class="hover:text-blue-400">&larr; Back to Projections</a>
+        </div>
+
+        {% if question %}
+            <div class="mt-8">
+                <h2 class="text-xl font-semibold">Question:</h2>
+                <p class="p-4 bg-gray-900 rounded-lg mt-2">{{ question }}</p>
+
+                <h2 class="text-xl font-semibold mt-6">Answer:</h2>
+                <div class="p-4 bg-gray-900 rounded-lg mt-2 text-lg leading-relaxed whitespace-pre-wrap">
+                    {{ answer }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

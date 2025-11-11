@@ -65,13 +65,27 @@
 <body>
     <div class="container">
         <div class="card">
-            <h1 class="text-3xl font-bold mb-4 text-center">Fantasy Football Projections</h1>
-            <h2 class="text-xl mb-6 text-center text-gray-400">Week {{ week }}, Year {{ year }}</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-3xl font-bold text-center">Fantasy Football Projections</h1>
+                <a href="/ai" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                    🤖 AI Assistant
+                </a>
+            </div>
+            <h2 class="text-xl mb-6 text-center text-gray-400">Year {{ year }}</h2>
 
             <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <input type="text" id="searchInput" class="search-input" placeholder="Search for a player...">
                 
-                <!-- Position Filter -->
+                <div class="w-full sm:w-auto">
+                    <select id="weekFilter" class="select-filter w-full">
+                        {% for w in range(1, current_api_week + 1) %}
+                            <option value="{{ w }}" {% if w == week %}selected{% endif %}>
+                                Week {{ w }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="w-full sm:w-auto">
                     <select id="positionFilter" class="select-filter w-full">
                         <option value="">All Positions</option>
@@ -84,7 +98,6 @@
                     </select>
                 </div>
 
-                <!-- Scoring Filter -->
                 <div class="w-full sm:w-auto">
                     <select id="scoringFilter" class="select-filter w-full">
                         <option value="ppr" {% if selected_scoring == "ppr" %}selected{% endif %}>PPR</option>
@@ -102,9 +115,8 @@
                             <th>Player</th>
                             <th>Team</th>
                             <th>Position</th>
-                            <th>Average Points</th>
-                            <th>Week Points</th>
-                            <th>Sleeper Projection</th>
+                            <th>Season Avg.</th>
+                            <th>Week {{ week }} Pts</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,21 +128,28 @@
                             <td>{{ player.position }}</td>
                             <td>{{ "%.2f"|format(player.average) }}</td>
                             <td>{{ "%.2f"|format(player.week_points) }}</td>
-                            <td>{{ "%.2f"|format(player.sleeper_projection) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             <div id="noResults" class="hidden text-center text-xl mt-4">No results found.</div>
+            {% if not players %}
+                <div class="text-center text-xl mt-4 text-yellow-400">
+                    No data found for this week. You may need to run the database population script.
+                </div>
+            {% endif %}
         </div>
     </div>
 
     <script id="players-data" type="application/json">{{ all_players | tojson | safe }}</script>
 
     <script>
+        // Client-side search data
         const allPlayers = JSON.parse(document.getElementById("players-data").textContent);
+        
         const searchInput = document.getElementById('searchInput');
+        const weekFilter = document.getElementById('weekFilter');
         const positionFilter = document.getElementById('positionFilter');
         const scoringFilter = document.getElementById('scoringFilter');
         const tableBody = document.querySelector("#playerTable tbody");
@@ -151,7 +170,6 @@
                         <td>${player.position}</td>
                         <td>${player.average.toFixed(2)}</td>
                         <td>${player.week_points.toFixed(2)}</td>
-                        <td>${player.sleeper_projection.toFixed(2)}</td>
                     `;
                     tableBody.appendChild(row);
                 });
@@ -168,14 +186,16 @@
             renderTable(filteredPlayers);
         });
 
-        // Position + Scoring filters reload the backend
+        // Filters reload the backend
         function reloadWithFilters() {
             const params = new URLSearchParams(window.location.search);
+            params.set("week", weekFilter.value); // Add week filter
             params.set("position", positionFilter.value);
             params.set("scoring", scoringFilter.value);
             window.location.search = params.toString();
         }
 
+        weekFilter.addEventListener('change', reloadWithFilters);
         positionFilter.addEventListener('change', reloadWithFilters);
         scoringFilter.addEventListener('change', reloadWithFilters);
     </script>
