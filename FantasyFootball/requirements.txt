@@ -6,3 +6,7 @@ requests
 jinja2
 python-dotenv
 google-genai
+
+#Run virtual environment
+# .\venv\Scripts\activate
+# python -m uvicorn main:app --reload
