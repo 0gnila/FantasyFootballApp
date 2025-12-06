@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Team - Fantasy Football</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">Fantasy Helper</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link active" href="/team">My Team</a>
+                <a class="nav-link" href="/ai">AI Assistant</a>
+                <span class="nav-link text-warning">Hi, {{ user.username }}</span>
+                <a class="nav-link btn btn-outline-light btn-sm ms-2" href="/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">Add Player</div>
+                    <div class="card-body">
+                        <form action="/add-player" method="post" autocomplete="off">
+                            <div class="mb-3">
+                                <label>Player Name</label>
+                                <input type="text" id="playerInput" name="player_name" 
+                                       class="form-control" placeholder="Start typing (e.g. Mahomes)..." 
+                                       list="playerOptions" required>
+                                
+                                <datalist id="playerOptions"></datalist>
+                                <div id="loadingIndicator" class="form-text text-muted" style="display:none;">Searching...</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Position</label>
+                                <select name="position" id="positionSelect" class="form-select">
+                                    <option value="QB">QB</option>
+                                    <option value="RB">RB</option>
+                                    <option value="WR">WR</option>
+                                    <option value="TE">TE</option>
+                                    <option value="K">K</option>
+                                    <option value="DEF">DEF</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Add to Roster</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <h3>My Roster</h3>
+
+                {% if team %}
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Position</th>
+                            <th>Name</th>
+                            <th>Season Avg</th> 
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for player in team %}
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ player.position }}</span></td>
+                            <td>
+                                <a href="/player/{{ player.name }}" class="text-decoration-none fw-bold text-primary">
+                                    {{ player.name }}
+                                </a>
+                            </td>
+                            <td>{{ player.average_points }}</td> <td>
+                            <form action="/remove-player" method="post" style="display:inline;">
+                                <input type="hidden" name="player_name" value="{{ player.name }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                            </form>
+                            </td>
+                        </tr>
+                {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <div class="alert alert-info">Your roster is empty. Add players to track them!</div>
+                {% endif %}
+
+                <div class="mt-4">
+                    <a href="/ai" class="btn btn-success btn-lg w-100">
+                        Ask AI about this Roster <i class="bi bi-robot"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const playerInput = document.getElementById("playerInput");
+        const datalist = document.getElementById("playerOptions");
+        const positionSelect = document.getElementById("positionSelect");
+        const loadingIndicator = document.getElementById("loadingIndicator");
+
+        // We use a small cache so we don't re-fetch if you backspace
+        let foundPlayers = []; 
+
+        playerInput.addEventListener('input', async function() {
+            const query = this.value;
+
+            // 1. If user selects a name from the list, auto-fill position
+            const selectedMatch = foundPlayers.find(p => p.name === query);
+            if (selectedMatch) {
+                positionSelect.value = selectedMatch.position.toUpperCase();
+                positionSelect.style.borderColor = "#198754"; // Green border feedback
+                return;
+            } else {
+                positionSelect.style.borderColor = "";
+            }
+
+            // 2. Only search if 2+ characters
+            if (query.length < 2) return;
+
+            // 3. Call the API
+            loadingIndicator.style.display = 'block';
+            try {
+                const response = await fetch(`/api/search-players?q=${encodeURIComponent(query)}`);
+                foundPlayers = await response.json();
+
+                // 4. Update the Datalist options
+                datalist.innerHTML = '';
+                foundPlayers.forEach(player => {
+                    const option = document.createElement('option');
+                    option.value = player.name;
+                    // Some browsers show the label as secondary text
+                    option.label = `${player.position} - ${player.team}`; 
+                    datalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching players:", error);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
