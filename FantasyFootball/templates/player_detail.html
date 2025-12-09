@@ -1,44 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ player_name }} - Stats</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .card {
+            background-color: #2d3748;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #4a5568;
+        }
+        th {
+            background-color: #4a5568;
+            font-weight: 600;
+        }
+        tr:hover { background-color: #4a5568; }
+        .right { text-align: right; }
+    </style>
 </head>
-<body class="bg-light">
-    
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="/">Fantasy Helper</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/team">Back to Team</a>
-            </div>
-        </div>
-    </nav>
-
+<body>
     <div class="container">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h1 class="card-title mb-0">{{ player_name }}</h1>
-                        <p class="text-muted mb-0">{{ position }} - {{ team }}</p>
+        <!-- Navigation Bar (same layout as index) -->
+        <nav class="bg-gray-800 p-4 mb-8 rounded-lg shadow-lg">
+            <div class="flex items-center justify-between">
+                <!-- Left Box -->
+                <div class="w-1/3 flex justify-start">
+                    <div class="text-xl font-bold text-blue-400 flex items-center gap-2">
+                        Player Details
                     </div>
-                    <div class="text-end">
-                        <h3 class="text-primary">{{ average }} <small class="text-muted fs-6">pts/game</small></h3>
-                        <div class="text-muted">Total: {{ total }} pts</div>
+                </div>
+                
+                <!-- Middle Box -->
+                <div class="w-1/3 flex items-center justify-center">
+                    <div class="flex items-center space-x-6">
+                        <a href="/" class="text-gray-400 hover:text-white transition">Home</a>
+                        <a href="/team" class="text-gray-400 hover:text-white transition">My Team</a>
+                        <a href="/ai" class="text-gray-400 hover:text-white transition">AI Assistant</a>
                     </div>
+                </div>
+                
+                <!-- Right Box -->
+                <div class="w-1/3 flex justify-end">
+                    <div class="flex items-center space-x-4">
+                        {% if user %}
+                        <span class="text-blue-300 font-medium">Hi, {{ user.username }}</span>
+                        <a href="/logout"
+                            class="border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-medium py-1 px-3 rounded transition text-sm">Logout</a>
+                        {% else %}
+                        <a href="/login" class="text-gray-300 hover:text-white transition">Log In</a>
+                        <a href="/register"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="card mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold mb-1">{{ player_name }}</h1>
+                    <div class="text-gray-400">{{ position }} - {{ team }}</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-2xl font-semibold text-blue-300">{{ average }}</div>
+                    <div class="text-gray-400 text-sm">pts/game • Total: {{ total }} pts</div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-white fw-bold">Weekly Breakdown</div>
-            <div class="card-body p-0">
-                <table class="table table-striped mb-0">
+        <div class="card">
+            <div class="mb-4 font-semibold">Weekly Breakdown</div>
+            <div class="overflow-x-auto">
+                <table>
                     <thead>
                         <tr>
                             <th>Week</th>
-                            <th>Opponent</th> <th class="text-end">Points</th>
+                            <th>Opponent</th>
+                            <th class="right">Points</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -46,16 +107,16 @@
                         <tr>
                             <td>Week {{ week_stat.week }}</td>
                             <td>{{ week_stat.opponent if week_stat.opponent else '-' }}</td>
-                            <td class="text-end fw-bold">{{ "%.2f"|format(week_stat.points) }}</td>
+                            <td class="right">{{ "%.2f"|format(week_stat.points) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
-        
-        <div class="mt-3">
-            <a href="/team" class="btn btn-outline-secondary">&larr; Back to My Team</a>
+
+        <div class="mt-4">
+            <a href="/team" class="inline-block bg-gray-700 text-gray-200 px-4 py-2 rounded hover:bg-gray-600">&larr; Back to My Team</a>
         </div>
     </div>
 </body>
