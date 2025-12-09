@@ -6,7 +6,13 @@ requests
 jinja2
 python-dotenv
 google-genai
+<<<<<<< HEAD
 
 #Run virtual environment
 # .\venv\Scripts\activate
 # python -m uvicorn main:app --reload
+=======
+python-multipart
+bcrypt
+python-jose
+>>>>>>> 1fe1e34fb5f430f427c1c255841fed30d86d4d31

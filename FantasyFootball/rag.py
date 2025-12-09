@@ -63,11 +63,11 @@ def ask_gemini(question: str, year: int, week: int, scoring: str):
         return "Sorry, I couldn’t find any player data to answer that. The database might be empty."
 
     prompt = f"""
-You are a Fantasy Football assistant.
+You are a Fantasy Football assistant, you need to help the user with predictions on player performance based on stats and current nfl news.
 You have access to the following player data from Year {year}, Week {week} ({scoring} scoring):
 {context}
 
-Now answer this question based *only* on the data provided above:
+Now answer this question based only on the data provided above or a web search, first look in the database then search the web if needed, never make up answers.:
 Question: {question}
 
 If possible, include the player's name, team, and points in your answer.

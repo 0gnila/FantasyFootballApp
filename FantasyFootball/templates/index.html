@@ -64,14 +64,34 @@
 </head>
 <body>
     <div class="container">
+        <!-- Navigation Bar -->
+        <nav class="bg-gray-800 p-4 mb-8 rounded-lg flex flex-col md:flex-row justify-between items-center shadow-lg">
+    <div class="text-xl font-bold text-blue-400 mb-4 md:mb-0 flex items-center gap-2">
+        Fantasy Projections
+    </div>
+    
+    <div class="flex items-center space-x-6">
+        <a href="/" class="text-white font-semibold border-b-2 border-blue-500">Home</a>
+        <a href="/team" class="text-gray-400 hover:text-white transition">My Team</a>
+        <a href="/ai" class="text-gray-400 hover:text-white transition">AI Assistant</a>
+    </div>
+
+    <div class="flex items-center space-x-4 mt-4 md:mt-0">
+        {% if user %}
+            <span class="text-blue-300 font-medium">Hi, {{ user.username }}</span>
+            <a href="/logout" class="border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-medium py-1 px-3 rounded transition text-sm">Logout</a>
+        {% else %}
+            <a href="/login" class="text-gray-300 hover:text-white transition">Log In</a>
+            <a href="/register" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition">Sign Up</a>
+        {% endif %}
+    </div>
+</nav>
+
         <div class="card">
             <div class="flex justify-between items-center mb-4">
-                <h1 class="text-3xl font-bold text-center">Fantasy Football Projections</h1>
-                <a href="/ai" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
-                    🤖 AI Assistant
-                </a>
+                <h1 class="text-2xl font-bold">Weekly Projections</h1>
+                <span class="bg-gray-700 text-sm px-3 py-1 rounded-full">Year {{ year }}</span>
             </div>
-            <h2 class="text-xl mb-6 text-center text-gray-400">Year {{ year }}</h2>
 
             <div class="mb-6 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <input type="text" id="searchInput" class="search-input" placeholder="Search for a player...">
